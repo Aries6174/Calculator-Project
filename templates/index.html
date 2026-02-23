@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator - Adrian Joel Jaspa</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="background-symbols">
+    <div class="symbol small" style="left:10%; animation-duration:18s;">+</div>
+    <div class="symbol medium" style="left:25%; animation-duration:5s;">−</div>
+    <div class="symbol large" style="left:40%; animation-duration:8s;">×</div>
+    <div class="symbol small" style="left:60%; animation-duration:25s;">÷</div>
+    <div class="symbol medium" style="left:75%; animation-duration:28s;">=</div>
+    <div class="symbol large" style="left:85%; animation-duration:35s;">+</div>
+    <div class="symbol small" style="left:10%; animation-duration:18s;">+</div>
+    <div class="symbol medium" style="left:25%; animation-duration:22s;">−</div>
+    <div class="symbol large" style="left:40%; animation-duration:30s;">×</div>
+    <div class="symbol small" style="left:60%; animation-duration:25s;">÷</div>
+    <div class="symbol medium" style="left:75%; animation-duration:28s;">=</div>
+    <div class="symbol large" style="left:85%; animation-duration:35s;">+</div>
+    <div class="symbol small" style="left:10%; animation-duration:18s;">+</div>
+    <div class="symbol medium" style="left:25%; animation-duration:22s;">−</div>
+    <div class="symbol large" style="left:40%; animation-duration:30s;">×</div>
+    <div class="symbol small" style="left:60%; animation-duration:25s;">÷</div>
+    <div class="symbol medium" style="left:75%; animation-duration:28s;">=</div>
+    <div class="symbol large" style="left:85%; animation-duration:35s;">+</div>
+    <div class="symbol small" style="left:10%; animation-duration:18s;">+</div>
+    <div class="symbol medium" style="left:25%; animation-duration:22s;">−</div>
+    <div class="symbol large" style="left:40%; animation-duration:30s;">×</div>
+    <div class="symbol small" style="left:60%; animation-duration:25s;">÷</div>
+    <div class="symbol medium" style="left:75%; animation-duration:28s;">=</div>
+    <div class="symbol large" style="left:85%; animation-duration:35s;">+</div>
+    </div>
+    <div class="container">
+        <div class="header">
+            <h1>Calculator</h1>
+            <p>By Adrian Joel Jaspa</p>
+        </div>
+
+        <div class="display" id="display">0</div>
+
+        <form method="POST" id="calcForm">
+            <input type="hidden" name="num1" id="num1" value="0">
+            <input type="hidden" name="num2" id="num2" value="0">
+            <input type="hidden" name="operation" id="operation" value="">
+
+            <div class="buttons">
+                <button type="button" class="clear-btn" onclick="clearDisplay()">C</button>
+                <button type="button" class="operator-btn" onclick="setOperation('divide')">/</button>
+                <button type="button" class="operator-btn" onclick="setOperation('multiply')">*</button>
+
+                <button type="button" class="number-btn" onclick="appendNumber('7')">7</button>
+                <button type="button" class="number-btn" onclick="appendNumber('8')">8</button>
+                <button type="button" class="number-btn" onclick="appendNumber('9')">9</button>
+                <button type="button" class="operator-btn" onclick="setOperation('subtract')">-</button>
+
+                <button type="button" class="number-btn" onclick="appendNumber('4')">4</button>
+                <button type="button" class="number-btn" onclick="appendNumber('5')">5</button>
+                <button type="button" class="number-btn" onclick="appendNumber('6')">6</button>
+                <button type="button" class="operator-btn" onclick="setOperation('add')">+</button>
+
+                <button type="button" class="number-btn" onclick="appendNumber('1')">1</button>
+                <button type="button" class="number-btn" onclick="appendNumber('2')">2</button>
+                <button type="button" class="number-btn" onclick="appendNumber('3')">3</button>
+                <button type="button" class="number-btn" onclick="appendNumber('.')">.</button>
+
+                <button type="button" class="number-btn" onclick="appendNumber('0')" style="grid-column: span 2;">0</button>
+                <button type="submit" class="equals-btn" onclick="calculate(event)">=</button>
+            </div>
+        </form>
+
+    </div>
+
+    <script>
+        let displayValue = '0';
+        let firstNumber = null;
+        let operation = null;
+        let shouldResetDisplay = false;
+        let justCalculated = false;
+        let hasEnteredSecondNumber = false;
+
+        function updateDisplay() {
+            document.getElementById('display').textContent = displayValue;
+        }
+
+        function clearDisplay() {
+            displayValue = '0';
+            firstNumber = null;
+            operation = null;
+            shouldResetDisplay = false;
+            justCalculated = false;
+            hasEnteredSecondNumber = false;
+            document.getElementById('num1').value = '0';
+            document.getElementById('num2').value = '0';
+            document.getElementById('operation').value = '';
+            updateDisplay();
+        }
+
+        function appendNumber(num) {
+            // If we need to reset the display for a new number input
+            if (shouldResetDisplay || justCalculated) {
+                displayValue = num === '.' ? '0.' : num;
+                shouldResetDisplay = false;
+                justCalculated = false;
+                hasEnteredSecondNumber = true;
+            } else {
+                // Normal appending logic
+                if (displayValue === '0' && num !== '.') {
+                    displayValue = num;
+                } else if (num === '.' && displayValue.includes('.')) {
+                    return;
+                } else {
+                    displayValue += num;
+                }
+                hasEnteredSecondNumber = true;
+            }
+            updateDisplay();
+        }
+
+        function setOperation(op) {
+            // If subtract button is clicked and we haven't entered the second number yet (and it's not after a calculation), treat it as negative sign
+            if (op === 'subtract' && shouldResetDisplay && !hasEnteredSecondNumber && !justCalculated) {
+                appendNumber('-');
+                return;
+            }
+            
+            if (justCalculated) {
+                // If we just calculated, use the result as the first number
+                firstNumber = parseFloat(displayValue);
+                justCalculated = false;
+            } else if (firstNumber === null) {
+                firstNumber = parseFloat(displayValue);
+            } else if (!shouldResetDisplay) {
+                // If user clicks operator again, do the calculation first
+                document.getElementById('num2').value = displayValue;
+                document.getElementById('operation').value = operation;
+                performCalculation();
+                // Continue to set the new operation (don't return)
+            }
+            operation = op;
+            shouldResetDisplay = true;
+            hasEnteredSecondNumber = false;
+            document.getElementById('num1').value = firstNumber;
+            document.getElementById('operation').value = op;
+        }
+
+        function performCalculation() {
+            const num1 = parseFloat(document.getElementById('num1').value);
+            const num2 = parseFloat(document.getElementById('num2').value);
+            const op = document.getElementById('operation').value;
+            let result;
+
+            if (op === "add") {
+                result = num1 + num2;
+            } else if (op === "subtract") {
+                result = num1 - num2;
+            } else if (op === "multiply") {
+                result = num1 * num2;
+            } else if (op === "divide") {
+                if (num2 !== 0) {
+                    result = num1 / num2;
+                } else {
+                    result = "Error: Division by zero is not allowed.";
+                }
+            }
+
+            firstNumber = result;
+            displayValue = result.toString();
+            shouldResetDisplay = true;
+            justCalculated = true;
+            hasEnteredSecondNumber = false;
+            updateDisplay();
+        }
+
+        function calculate(event) {
+            event.preventDefault();
+            if (!operation) return;
+            
+            if (shouldResetDisplay === false) {
+                // We have entered a second number, so calculate
+                document.getElementById('num2').value = displayValue;
+                performCalculation();
+            }
+            // If shouldResetDisplay is true, we just clicked operator without entering second number - do nothing
+        }
+
+        // Initialize display
+        updateDisplay();
+    </script>
+</body>
+</html>
