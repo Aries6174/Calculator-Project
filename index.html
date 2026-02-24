@@ -99,53 +99,47 @@
         }
 
         function appendNumber(num) {
-            // If we need to reset the display for a new number input
-            if (shouldResetDisplay || justCalculated) {
+            if (displayValue === '+' || 
+                displayValue === '-' || 
+                displayValue === '×' || 
+                displayValue === '÷') {
+
                 displayValue = num === '.' ? '0.' : num;
-                shouldResetDisplay = false;
-                justCalculated = false;
-                hasEnteredSecondNumber = true;
+            } else if (displayValue === '0' && num !== '.') {
+                displayValue = num;
+            } else if (num === '.' && displayValue.includes('.')) {
+                return;
             } else {
-                // Normal appending logic
-                if (displayValue === '0' && num !== '.') {
-                    displayValue = num;
-                } else if (num === '.' && displayValue.includes('.')) {
-                    return;
-                } else {
-                    displayValue += num;
-                }
-                hasEnteredSecondNumber = true;
+                displayValue += num;
             }
+
             updateDisplay();
         }
 
         function setOperation(op) {
-            // If subtract button is clicked and we haven't entered the second number yet (and it's not after a calculation), treat it as negative sign
-            if (op === 'subtract' && shouldResetDisplay && !hasEnteredSecondNumber && !justCalculated) {
-                appendNumber('-');
-                return;
-            }
-            
+            if (displayValue === 'Error') return;
+
+            // If we already calculated, use result as first number
             if (justCalculated) {
-                // If we just calculated, use the result as the first number
                 firstNumber = parseFloat(displayValue);
                 justCalculated = false;
             } else if (firstNumber === null) {
                 firstNumber = parseFloat(displayValue);
-            } else if (!shouldResetDisplay) {
-                // If user clicks operator again, do the calculation first
-                document.getElementById('num2').value = displayValue;
-                document.getElementById('operation').value = operation;
-                performCalculation();
-                // Continue to set the new operation (don't return)
             }
+
             operation = op;
+
+            // Show operator symbol on screen
+            if (op === "add") displayValue = "+";
+            if (op === "subtract") displayValue = "-";
+            if (op === "multiply") displayValue = "×";
+            if (op === "divide") displayValue = "÷";
+
             shouldResetDisplay = true;
             hasEnteredSecondNumber = false;
-            document.getElementById('num1').value = firstNumber;
-            document.getElementById('operation').value = op;
-        }
 
+            updateDisplay();
+        }
         function performCalculation() {
             const num1 = parseFloat(document.getElementById('num1').value);
             const num2 = parseFloat(document.getElementById('num2').value);
